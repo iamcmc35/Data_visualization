@@ -15,11 +15,17 @@ st.markdown("""
 # Load data
 @st.cache_data
 def load_data():
-    rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")
-    station_data = pd.read_csv("station_data.csv", encoding="euc-kr")
+    rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")  # 대여 데이터
+    station_data = pd.read_csv("station_data.csv", encoding="euc-kr")  # 터미널 정보
     return rental_data, station_data
 
 rental_data, station_data = load_data()
+
+# Data preprocessing: Create '대여시간(시)' column
+if '출발시간' in rental_data.columns:
+    rental_data['대여시간(시)'] = pd.to_datetime(rental_data['출발시간'], errors='coerce').dt.hour
+else:
+    st.error("출발시간 열이 데이터에 존재하지 않습니다. 데이터를 확인하세요.")
 
 # Data overview
 st.header("데이터 미리보기")
@@ -30,9 +36,12 @@ st.subheader("터미널 정보 데이터")
 st.dataframe(station_data.head())
 
 # Time-based analysis
-st.header("시간대별 이용량 분석")
-hourly_counts = rental_data['대여시간(시)'].value_counts().sort_index()
-st.bar_chart(hourly_counts)
+if '대여시간(시)' in rental_data.columns:
+    st.header("시간대별 이용량 분석")
+    hourly_counts = rental_data['대여시간(시)'].value_counts().sort_index()
+    st.bar_chart(hourly_counts)
+else:
+    st.error("'대여시간(시)' 열이 생성되지 않았습니다.")
 
 # Map visualization
 st.header("터미널 위치 시각화")
