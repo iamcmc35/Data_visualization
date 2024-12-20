@@ -9,8 +9,8 @@ st.title("누비자 데이터 분석 대시보드")
 st.markdown("2022년 12월 데이터를 활용한 터미널 이동 경로 및 이용 분석")
 
 # Load data
-rental_data = pd.read_csv("rental_data.csv")
-station_data = pd.read_csv("station_data.csv")
+rental_data = pd.read_csv("./rental_data.csv")
+station_data = pd.read_csv("./station_data.csv")
 
 # Data overview
 st.header("데이터 미리보기")
