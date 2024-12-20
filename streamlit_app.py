@@ -13,10 +13,10 @@ st.markdown("""
 """)
 
 # Load data
-@st.cache
+@st.cache_data
 def load_data():
-    rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")  # 현재 디렉토리에서 파일 로드
-    station_data = pd.read_csv("station_data.csv", encoding="euc-kr")  # 현재 디렉토리에서 파일 로드
+    rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")
+    station_data = pd.read_csv("station_data.csv", encoding="euc-kr")
     return rental_data, station_data
 
 rental_data, station_data = load_data()
