@@ -4,25 +4,35 @@ import matplotlib.pyplot as plt
 import folium
 from streamlit_folium import folium_static
 import matplotlib.font_manager as fm
+import os
 
-# 페이지 설정 (최상단 위치)
+# 페이지 설정
 st.set_page_config(page_title="누비자 데이터 분석", layout="wide")
 
 # 한글 폰트 설정
 def set_korean_font():
     import matplotlib
-    # 윈도우 기본 한글 폰트: Malgun Gothic
-    font_path = fm.findfont(fm.FontProperties(family="Malgun Gothic"))
+    # 한글 지원이 보장된 폰트: 나눔고딕
+    font_paths = [
+        "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",  # Linux
+        "C:/Windows/Fonts/malgun.ttf",  # Windows
+        "/Library/Fonts/AppleGothic.ttf"  # macOS
+    ]
+    font_path = next((path for path in font_paths if os.path.exists(path)), None)
     if font_path:
         font_prop = fm.FontProperties(fname=font_path)
         matplotlib.rc('font', family=font_prop.get_name())
         plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
         return font_prop
     else:
-        raise FileNotFoundError("Malgun Gothic 폰트를 찾을 수 없습니다.")
+        raise FileNotFoundError("한글 폰트를 찾을 수 없습니다. 실행 환경에 맞는 한글 폰트를 설치해주세요.")
 
 # 한글 폰트 설정 적용
-font_prop = set_korean_font()
+try:
+    font_prop = set_korean_font()
+except FileNotFoundError as e:
+    st.error(str(e))
+    font_prop = None  # 폰트 설정 실패 시 None으로 설정
 
 # Streamlit 제목 및 설명
 st.title("🚲 창원시 공영자전거 데이터 대시보드")
