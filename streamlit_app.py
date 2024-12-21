@@ -1,27 +1,27 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-from matplotlib import rc
-import os
-import subprocess
+from matplotlib import font_manager as fm, rc
 import plotly.graph_objects as go
+import os
 
-# Install NanumGothic font if not already installed
-def install_korean_font():
+# NanumSquareR 폰트 경로 설정
+def set_korean_font():
     try:
-        if not os.path.exists('/usr/share/fonts/truetype/nanum/NanumGothic.ttf'):
-            st.info("NanumGothic 폰트를 설치 중입니다. 잠시만 기다려 주세요.")
-            subprocess.run(["sudo", "apt-get", "update"], check=True)
-            subprocess.run(["sudo", "apt-get", "install", "-y", "fonts-nanum"], check=True)
-            subprocess.run(["fc-cache", "-fv"], check=True)
-            st.success("NanumGothic 폰트 설치가 완료되었습니다.")
-        rc('font', family='NanumGothic')
+        # 폰트 파일 경로 (사용자 환경에 맞게 수정)
+        font_path = "C:/Windows/Fonts/NanumSquareR.ttf"  # Windows 경로 예시
+        # Linux 또는 macOS에서는 적절한 경로로 수정 필요
+        if not os.path.exists(font_path):
+            st.error(f"'{font_path}' 폰트 파일이 존재하지 않습니다. 경로를 확인하세요.")
+            return
+        font_name = fm.FontProperties(fname=font_path).get_name()
+        rc('font', family=font_name)
+        st.success(f"'{font_name}' 폰트가 설정되었습니다.")
     except Exception as e:
-        st.warning("폰트 설치 중 문제가 발생했습니다. 시스템에 'NanumGothic' 폰트를 직접 설치하세요.")
+        st.warning("NanumSquareR 폰트를 설정하는 중 문제가 발생했습니다.")
         st.error(str(e))
 
-install_korean_font()
+set_korean_font()
 
 # Title and description
 st.title("누비자 데이터 분석 및 환경 영향 대시보드")
