@@ -5,25 +5,24 @@ from streamlit_folium import folium_static
 import matplotlib.font_manager as fm
 import os
 
+# 페이지 설정 (가장 첫 번째 줄에 위치)
+st.set_page_config(page_title="누비자 데이터 분석", layout="wide")
+
 # 한글 폰트 설정
 def set_korean_font():
-    # 나눔고딕 폰트 설치
     if not os.path.exists("/usr/share/fonts/truetype/nanum"):
         os.system("apt-get update -qq && apt-get install -y fonts-nanum*")
-    # 폰트 경로 지정
     font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
     if os.path.exists(font_path):
         font_prop = fm.FontProperties(fname=font_path)
         plt.rc('font', family=font_prop.get_name())
-        plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
+        plt.rcParams['axes.unicode_minus'] = False
     else:
         st.warning("폰트 파일을 찾을 수 없습니다. 한글이 깨질 수 있습니다.")
 
 set_korean_font()  # 한글 폰트 설정
 
-
-# Title and layout
-st.set_page_config(page_title="누비자 데이터 분석", layout="wide")
+# Streamlit 대시보드 코드 시작
 st.title("🚲 창원시 공영자전거 데이터 대시보드")
 st.markdown("""
 ### 목적
