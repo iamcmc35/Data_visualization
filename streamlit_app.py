@@ -18,6 +18,7 @@ st.markdown("""
 # Section 1: 창원시 미세먼지 현황
 st.header("창원시 미세먼지 현황")
 try:
+    # Example data for air quality (replace with actual API response)
     pm10 = 75  # PM10 예시 값
     pm2_5 = 45  # PM2.5 예시 값
 
@@ -71,7 +72,6 @@ except Exception as e:
 # Load data
 @st.cache_data
 def load_data():
-    # 인코딩 수정
     rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")
     station_data = pd.read_csv("station_data.csv", encoding="euc-kr")
     return rental_data, station_data
@@ -86,18 +86,55 @@ else:
 
 # Section 2: 시간대별 자전거 대여량 분석
 st.header("시간대별 자전거 대여량 분석")
-if '출발시간' in rental_data.columns:
-    rental_data['대여시간'] = pd.to_datetime(rental_data['출발시간'], errors='coerce').dt.hour
-    hourly_counts = rental_data['대여시간'].value_counts().sort_index()
+rental_data['대여시간'] = pd.to_datetime(rental_data['출발시간'], errors='coerce').dt.hour
+hourly_counts = rental_data['대여시간'].value_counts().sort_index()
 
-    # Plot hourly rental counts
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.bar(hourly_counts.index, hourly_counts.values, color='skyblue')
-    ax.set_title("시간대별 자전거 대여량", fontsize=16)
-    ax.set_xlabel("시간대 (시)", fontsize=12)
-    ax.set_ylabel("대여량 (건수)", fontsize=12)
-    st.pyplot(fig)
-else:
-    st.error("데이터에 '출발시간' 열이 없습니다. CSV 파일을 확인하세요.")
+# Plot hourly rental counts
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.bar(hourly_counts.index, hourly_counts.values, color='skyblue')
+ax.set_title("시간대별 자전거 대여량", fontsize=16)
+ax.set_xlabel("시간대 (시)", fontsize=12)
+ax.set_ylabel("대여량 (건수)", fontsize=12)
+st.pyplot(fig)
 
-# Remaining sections unchanged...
+# Section 3: 공영자전거 이용률에 따른 차량 대체 효과
+st.header("공영자전거 이용률에 따른 차량 대체 효과")
+average_daily_rentals = rental_data['대여일'].nunique()  # 하루 평균 대여 건수 계산
+car_replacement_rate = 0.2  # 자전거 1대당 대체되는 차량 비율 (예: 20%)
+estimated_car_reduction = average_daily_rentals * car_replacement_rate
+
+# Display results
+st.write(f"공영자전거를 통해 하루 약 {estimated_car_reduction:.0f}대의 차량 운행이 감소합니다.")
+
+# Visualization
+fig, ax = plt.subplots(figsize=(8, 6))
+categories = ['대여된 자전거', '대체된 차량']
+values = [average_daily_rentals, estimated_car_reduction]
+ax.pie(values, labels=categories, autopct='%1.1f%%', startangle=90, colors=['lightblue', 'orange'])
+ax.set_title("공영자전거 이용에 따른 차량 대체 효과")
+st.pyplot(fig)
+
+# Section 4: 터미널별 대여량 히트맵
+st.header("터미널별 대여량 히트맵")
+rental_counts = rental_data['출발터미널'].value_counts()
+
+# Merge with station data to get coordinates
+terminal_data = pd.merge(
+    rental_counts.reset_index(),
+    station_data[['터미널번호', '위도', '경도']],
+    left_on='index',
+    right_on='터미널번호',
+    how='left'
+)
+
+# Create map with heatmap
+map = folium.Map(location=[35.2, 128.65], zoom_start=12)
+for _, row in terminal_data.iterrows():
+    folium.Circle(
+        location=[row['위도'], row['경도']],
+        radius=row['출발터미널'] * 10,  # Adjust size based on rental counts
+        color='blue',
+        fill=True,
+        fill_opacity=0.6
+    ).add_to(map)
+folium_static(map)
