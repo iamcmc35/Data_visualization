@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import folium
 from streamlit_folium import folium_static
 import matplotlib.font_manager as fm
-import os
 
 # 페이지 설정 (최상단 위치)
 st.set_page_config(page_title="누비자 데이터 분석", layout="wide")
@@ -12,16 +11,15 @@ st.set_page_config(page_title="누비자 데이터 분석", layout="wide")
 # 한글 폰트 설정
 def set_korean_font():
     import matplotlib
-    if not os.path.exists("/usr/share/fonts/truetype/nanum"):
-        os.system("apt-get update -qq && apt-get install -y fonts-nanum*")
-    font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
-    if os.path.exists(font_path):
+    # 윈도우 기본 한글 폰트: Malgun Gothic
+    font_path = fm.findfont(fm.FontProperties(family="Malgun Gothic"))
+    if font_path:
         font_prop = fm.FontProperties(fname=font_path)
         matplotlib.rc('font', family=font_prop.get_name())
         plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
         return font_prop
     else:
-        raise FileNotFoundError("폰트 파일을 찾을 수 없습니다.")
+        raise FileNotFoundError("Malgun Gothic 폰트를 찾을 수 없습니다.")
 
 # 한글 폰트 설정 적용
 font_prop = set_korean_font()
