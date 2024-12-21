@@ -9,16 +9,9 @@ import os
 st.set_page_config(page_title="누비자 데이터 분석", layout="wide")
 
 # 한글 폰트 설정
-def set_korean_font():
-    if not os.path.exists("/usr/share/fonts/truetype/nanum"):
-        os.system("apt-get update -qq && apt-get install -y fonts-nanum*")
-    font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
-    if os.path.exists(font_path):
-        font_prop = fm.FontProperties(fname=font_path)
-        plt.rc('font', family=font_prop.get_name())
-        plt.rcParams['axes.unicode_minus'] = False
-    else:
-        st.warning("폰트 파일을 찾을 수 없습니다. 한글이 깨질 수 있습니다.")
+!sudo apt-get install -y fonts-nanum
+!sudo fc-cache -fv
+!rm ~/.cache/matplotlib -rf
 
 set_korean_font()  # 한글 폰트 설정
 
