@@ -3,7 +3,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import folium
 from streamlit_folium import folium_static
-import requests
+import matplotlib.font_manager as fm
+
+# 한글 폰트 설정
+@st.cache_resource
+def set_korean_font():
+    import matplotlib
+    import os
+    # 나눔고딕 폰트 다운로드 및 설치
+    if not os.path.exists("/usr/share/fonts/truetype/nanum"):
+        os.system("apt-get update -qq && apt-get install -y fonts-nanum*")
+        matplotlib.font_manager._rebuild()
+    # Matplotlib 폰트 설정
+    font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+    font_prop = fm.FontProperties(fname=font_path)
+    matplotlib.rc('font', family=font_prop.get_name())
+    plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
+
+set_korean_font()  # 한글 폰트 설정
 
 # Title and layout
 st.set_page_config(page_title="누비자 데이터 분석", layout="wide")
@@ -50,10 +67,9 @@ elif menu == "터미널 위치":
 elif menu == "미세먼지 현황":
     st.header("🌫️ 창원시 미세먼지 현황")
 
-    # 미세먼지 데이터 API (수동 데이터 또는 API 연동 필요)
+    # 미세먼지 데이터 예제
     @st.cache_data
     def get_air_quality_data():
-        # Placeholder for actual API data fetching
         data = {
             "날짜": ["2022-12-01", "2022-12-02", "2022-12-03", "2022-12-04", "2022-12-05"],
             "미세먼지(PM10)": [40, 50, 35, 70, 55],
@@ -79,7 +95,7 @@ elif menu == "미세먼지 현황":
 elif menu == "교통혼잡 영향":
     st.header("🚗 공영자전거와 교통혼잡 영향")
 
-    # 가상의 데이터: 공영자전거 이용률과 교통혼잡지수
+    # 가상 데이터
     data = {
         "월": ["2022-01", "2022-02", "2022-03", "2022-04", "2022-05"],
         "누비자 이용률(%)": [20, 25, 30, 35, 40],
@@ -105,8 +121,7 @@ elif menu == "교통혼잡 영향":
     st.pyplot(fig)
 
     st.markdown("""
-    - 공영자전거 이용률이 증가하면서 교통혼잡지수가 점차 감소하는 경향이 보입니다.
-    - 이는 공영자전거가 교통 체증 완화에 기여하고 있음을 나타냅니다.
+    - 공영자전거 이용률이 증가하면서 교통혼잡지수가 감소하는 경향을 보입니다.
     """)
 
 st.markdown("**데이터와 분석은 계속 업데이트됩니다!**")
