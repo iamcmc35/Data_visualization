@@ -78,6 +78,12 @@ def load_data():
 
 rental_data, station_data = load_data()
 
+# Ensure '대여일' column exists
+if '출발일' in rental_data.columns:
+    rental_data['대여일'] = pd.to_datetime(rental_data['출발일'], errors='coerce')
+else:
+    st.error("데이터에 '출발일' 열이 없습니다. CSV 파일을 확인하세요.")
+
 # Section 2: 시간대별 자전거 대여량 분석
 st.header("시간대별 자전거 대여량 분석")
 rental_data['대여시간'] = pd.to_datetime(rental_data['출발시간'], errors='coerce').dt.hour
@@ -93,7 +99,7 @@ st.pyplot(fig)
 
 # Section 3: 공영자전거 이용률에 따른 차량 대체 효과
 st.header("공영자전거 이용률에 따른 차량 대체 효과")
-average_daily_rentals = len(rental_data['대여일'].unique())  # 하루 평균 대여 건수 계산
+average_daily_rentals = rental_data['대여일'].nunique()  # 하루 평균 대여 건수 계산
 car_replacement_rate = 0.2  # 자전거 1대당 대체되는 차량 비율 (예: 20%)
 estimated_car_reduction = average_daily_rentals * car_replacement_rate
 
