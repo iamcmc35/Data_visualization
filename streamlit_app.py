@@ -2,20 +2,26 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from streamlit_folium import folium_static
-import folium
+from matplotlib import rc
+import os
+import subprocess
 import plotly.graph_objects as go
-import requests
-import matplotlib.font_manager as fm
 
-# 한글 폰트 설정
-def set_korean_font():
+# Install NanumGothic font if not already installed
+def install_korean_font():
     try:
-        plt.rc('font', family='NanumGothic')
-    except Exception:
-        st.warning("한글 폰트를 사용할 수 없습니다. 시스템에 'NanumGothic' 폰트를 설치하세요.")
+        if not os.path.exists('/usr/share/fonts/truetype/nanum/NanumGothic.ttf'):
+            st.info("NanumGothic 폰트를 설치 중입니다. 잠시만 기다려 주세요.")
+            subprocess.run(["sudo", "apt-get", "update"], check=True)
+            subprocess.run(["sudo", "apt-get", "install", "-y", "fonts-nanum"], check=True)
+            subprocess.run(["fc-cache", "-fv"], check=True)
+            st.success("NanumGothic 폰트 설치가 완료되었습니다.")
+        rc('font', family='NanumGothic')
+    except Exception as e:
+        st.warning("폰트 설치 중 문제가 발생했습니다. 시스템에 'NanumGothic' 폰트를 직접 설치하세요.")
+        st.error(str(e))
 
-set_korean_font()
+install_korean_font()
 
 # Title and description
 st.title("누비자 데이터 분석 및 환경 영향 대시보드")
