@@ -48,7 +48,8 @@ st.sidebar.header("📋 메뉴")
 menu = st.sidebar.selectbox("메뉴를 선택하세요", ["대여 및 반납 데이터", "터미널 위치", "미세먼지 현황", "교통혼잡 영향"])
 
 # 데이터 로드 함수
-@st.cache_data(allow_output_mutation=True)  # allow_output_mutation 옵션 추가
+# allow_output_mutation=True 옵션 제거
+@st.cache_data 
 def load_data():
     rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")
     station_data = pd.read_csv("station_data.csv", encoding="euc-kr")
