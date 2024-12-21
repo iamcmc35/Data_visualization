@@ -1,26 +1,26 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import folium
 from streamlit_folium import folium_static
 import matplotlib.font_manager as fm
+import os
 
 # 한글 폰트 설정
-@st.cache_resource
 def set_korean_font():
-    import matplotlib
-    import os
-    # 나눔고딕 폰트 다운로드 및 설치
+    # 나눔고딕 폰트 설치
     if not os.path.exists("/usr/share/fonts/truetype/nanum"):
         os.system("apt-get update -qq && apt-get install -y fonts-nanum*")
-        matplotlib.font_manager._rebuild()
-    # Matplotlib 폰트 설정
+    # 폰트 경로 지정
     font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
-    font_prop = fm.FontProperties(fname=font_path)
-    matplotlib.rc('font', family=font_prop.get_name())
-    plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
+    if os.path.exists(font_path):
+        font_prop = fm.FontProperties(fname=font_path)
+        plt.rc('font', family=font_prop.get_name())
+        plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
+    else:
+        st.warning("폰트 파일을 찾을 수 없습니다. 한글이 깨질 수 있습니다.")
 
 set_korean_font()  # 한글 폰트 설정
+
 
 # Title and layout
 st.set_page_config(page_title="누비자 데이터 분석", layout="wide")
