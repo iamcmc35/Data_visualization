@@ -8,39 +8,11 @@ import requests
 st.title("누비자 데이터 분석 및 환경 영향 대시보드")
 st.markdown("""
 ### 분석 목표
-- 2022년 12월 데이터를 기반으로 누비자 대여 및 반납 패턴을 분석합니다.
-- 터미널 간 이동 경로 및 위치 정보를 시각화합니다.
-- 창원시 미세먼지 현황을 확인하고, 공영자전거 이용이 교통 혼잡에 미치는 영향을 논의합니다.
+- 창원시 미세먼지 현황과 공영자전거 이용의 교통 혼잡 완화 효과를 분석합니다.
+- 2022년 12월 데이터를 기반으로 누비자 대여 및 반납 패턴을 시각화합니다.
 """)
 
-# Load data
-@st.cache_data
-def load_data():
-    rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")  # 대여 데이터
-    station_data = pd.read_csv("station_data.csv", encoding="euc-kr")  # 터미널 정보
-    return rental_data, station_data
-
-rental_data, station_data = load_data()
-
-# Section 1: Data Overview
-st.header("데이터 미리보기")
-st.subheader("대여 및 반납 데이터")
-st.dataframe(rental_data.head())
-
-st.subheader("터미널 정보 데이터")
-st.dataframe(station_data.head())
-
-# Section 2: Map Visualization
-st.header("터미널 위치 시각화")
-map = folium.Map(location=[35.2, 128.65], zoom_start=12)
-for _, row in station_data.iterrows():
-    folium.Marker(
-        [row['위도'], row['경도']],
-        tooltip=row['터미널명']
-    ).add_to(map)
-folium_static(map)
-
-# Section 3: 창원시 미세먼지 현황
+# Section 1: 창원시 미세먼지 현황
 st.header("창원시 미세먼지 현황")
 
 # Fetch air quality data (dummy API URL, replace with actual API)
@@ -67,7 +39,7 @@ try:
 except Exception as e:
     st.error("미세먼지 데이터를 가져오는 데 실패했습니다. 인터넷 연결 또는 API 키를 확인하세요.")
 
-# Section 4: 공영자전거 이용률과 교통 혼잡 영향
+# Section 2: 공영자전거 이용률과 교통 혼잡 영향
 st.header("공영자전거 이용률과 교통 혼잡 영향")
 
 # Insights on traffic congestion
@@ -80,7 +52,33 @@ st.markdown("""
 ### 창원시 교통 혼잡 완화 효과
 - 2022년 12월 기준, 누비자의 하루 평균 이용 건수는 약 `3000건`으로 추정됩니다.
 - 이는 하루 약 `500대의 차량 운행`을 줄이는 효과를 가지고 있습니다.
-
-### 추가 데이터 요청
-- 보다 정확한 분석을 위해 창원시 교통량 데이터를 결합하면, 공영자전거 이용과 교통 혼잡의 상관관계를 구체적으로 측정할 수 있습니다.
 """)
+
+# Load data
+@st.cache_data
+def load_data():
+    rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")  # 대여 데이터
+    station_data = pd.read_csv("station_data.csv", encoding="euc-kr")  # 터미널 정보
+    return rental_data, station_data
+
+rental_data, station_data = load_data()
+
+# Section 3: Data Overview
+st.header("데이터 미리보기")
+st.subheader("대여 및 반납 데이터")
+st.dataframe(rental_data.head())
+
+st.subheader("터미널 정보 데이터")
+st.dataframe(station_data.head())
+
+# Section 4: Map Visualization
+st.header("터미널 위치 시각화")
+map = folium.Map(location=[35.2, 128.65], zoom_start=12)
+for _, row in station_data.iterrows():
+    folium.Marker(
+        [row['위도'], row['경도']],
+        tooltip=row['터미널명']
+    ).add_to(map)
+folium_static(map)
+
+st.markdown("### 추가 분석 기능은 계속 업데이트될 예정입니다!")
