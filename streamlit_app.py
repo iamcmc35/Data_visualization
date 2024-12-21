@@ -72,8 +72,8 @@ except Exception as e:
 # Load data
 @st.cache_data
 def load_data():
-    rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")
-    station_data = pd.read_csv("station_data.csv", encoding="euc-kr")
+    rental_data = pd.read_csv("rental_data.csv", encoding="utf-8")
+    station_data = pd.read_csv("station_data.csv", encoding="utf-8")
     return rental_data, station_data
 
 rental_data, station_data = load_data()
@@ -86,16 +86,19 @@ else:
 
 # Section 2: 시간대별 자전거 대여량 분석
 st.header("시간대별 자전거 대여량 분석")
-rental_data['대여시간'] = pd.to_datetime(rental_data['출발시간'], errors='coerce').dt.hour
-hourly_counts = rental_data['대여시간'].value_counts().sort_index()
+if '출발시간' in rental_data.columns:
+    rental_data['대여시간'] = pd.to_datetime(rental_data['출발시간'], errors='coerce').dt.hour
+    hourly_counts = rental_data['대여시간'].value_counts().sort_index()
 
-# Plot hourly rental counts
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.bar(hourly_counts.index, hourly_counts.values, color='skyblue')
-ax.set_title("시간대별 자전거 대여량", fontsize=16)
-ax.set_xlabel("시간대 (시)", fontsize=12)
-ax.set_ylabel("대여량 (건수)", fontsize=12)
-st.pyplot(fig)
+    # Plot hourly rental counts
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(hourly_counts.index, hourly_counts.values, color='skyblue')
+    ax.set_title("시간대별 자전거 대여량", fontsize=16)
+    ax.set_xlabel("시간대 (시)", fontsize=12)
+    ax.set_ylabel("대여량 (건수)", fontsize=12)
+    st.pyplot(fig)
+else:
+    st.error("데이터에 '출발시간' 열이 없습니다. CSV 파일을 확인하세요.")
 
 # Section 3: 공영자전거 이용률에 따른 차량 대체 효과
 st.header("공영자전거 이용률에 따른 차량 대체 효과")
@@ -119,22 +122,25 @@ st.header("터미널별 대여량 히트맵")
 rental_counts = rental_data['출발터미널'].value_counts()
 
 # Merge with station data to get coordinates
-terminal_data = pd.merge(
-    rental_counts.reset_index(),
-    station_data[['터미널번호', '위도', '경도']],
-    left_on='index',
-    right_on='터미널번호',
-    how='left'
-)
+if '터미널번호' in station_data.columns:
+    terminal_data = pd.merge(
+        rental_counts.reset_index(),
+        station_data[['터미널번호', '위도', '경도']],
+        left_on='index',
+        right_on='터미널번호',
+        how='left'
+    )
 
-# Create map with heatmap
-map = folium.Map(location=[35.2, 128.65], zoom_start=12)
-for _, row in terminal_data.iterrows():
-    folium.Circle(
-        location=[row['위도'], row['경도']],
-        radius=row['출발터미널'] * 10,  # Adjust size based on rental counts
-        color='blue',
-        fill=True,
-        fill_opacity=0.6
-    ).add_to(map)
-folium_static(map)
+    # Create map with heatmap
+    map = folium.Map(location=[35.2, 128.65], zoom_start=12)
+    for _, row in terminal_data.iterrows():
+        folium.Circle(
+            location=[row['위도'], row['경도']],
+            radius=row['출발터미널'] * 10,  # Adjust size based on rental counts
+            color='blue',
+            fill=True,
+            fill_opacity=0.6
+        ).add_to(map)
+    folium_static(map)
+else:
+    st.error("터미널 정보 데이터에 '터미널번호' 열이 없습니다.")
