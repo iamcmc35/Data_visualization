@@ -18,9 +18,9 @@ st.markdown("""
 # Section 1: 창원시 미세먼지 현황
 st.header("창원시 미세먼지 현황")
 try:
-    # Dummy data for air quality (replace with API data)
-    pm10 = 75  # 예시 값
-    pm2_5 = 45  # 예시 값
+    # Example data for air quality (replace with actual API response)
+    pm10 = 75  # PM10 예시 값
+    pm2_5 = 45  # PM2.5 예시 값
 
     # Gauge Chart for PM10
     st.subheader("미세먼지 (PM10)")
@@ -112,7 +112,7 @@ rental_data['대여일'] = pd.to_datetime(rental_data['출발일'], errors='coer
 daily_counts = rental_data['대여일'].value_counts().sort_index()
 st.line_chart(daily_counts)
 
-# Section 6: Map Visualization
+# Section 6: 터미널 위치 시각화
 st.header("터미널 위치 시각화")
 map = folium.Map(location=[35.2, 128.65], zoom_start=12)
 for _, row in station_data.iterrows():
