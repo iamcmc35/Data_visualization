@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from streamlit_folium import folium_static
 import folium
-import seaborn as sns
+import plotly.graph_objects as go
 import requests
 
 # Title and description
@@ -18,24 +18,54 @@ st.markdown("""
 # Section 1: 창원시 미세먼지 현황
 st.header("창원시 미세먼지 현황")
 try:
-    response = requests.get("https://api.weather.com/v3/wx/conditions/current", params={
-        "language": "ko-KR",
-        "format": "json",
-        "apiKey": "your_api_key"  # Replace with a valid API key
-    })
-    air_data = response.json()
+    # Dummy data for air quality (replace with API data)
+    pm10 = 75  # 예시 값
+    pm2_5 = 45  # 예시 값
 
-    pm10 = air_data.get("pm10", "N/A")
-    pm2_5 = air_data.get("pm2_5", "N/A")
-    st.write(f"현재 미세먼지(PM10): {pm10} ㎍/㎥")
-    st.write(f"현재 초미세먼지(PM2.5): {pm2_5} ㎍/㎥")
+    # Gauge Chart for PM10
+    st.subheader("미세먼지 (PM10)")
+    fig_pm10 = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=pm10,
+        title={'text': "PM10 농도 (㎍/㎥)"},
+        gauge={
+            'axis': {'range': [0, 150]},
+            'steps': [
+                {'range': [0, 30], 'color': "green"},
+                {'range': [30, 80], 'color': "yellow"},
+                {'range': [80, 150], 'color': "red"}
+            ],
+            'threshold': {
+                'line': {'color': "red", 'width': 4},
+                'thickness': 0.75,
+                'value': 80
+            }
+        }
+    ))
+    st.plotly_chart(fig_pm10)
 
-    if pm10 != "N/A" and int(pm10) > 80:
-        st.warning("미세먼지가 높은 상태입니다. 자전거 이용 시 마스크 착용을 권장합니다.")
-    elif pm2_5 != "N/A" and int(pm2_5) > 50:
-        st.warning("초미세먼지가 높은 상태입니다. 야외 활동을 자제하세요.")
-    else:
-        st.success("공기가 양호합니다. 자전거 이용에 적합한 상태입니다.")
+    # Gauge Chart for PM2.5
+    st.subheader("초미세먼지 (PM2.5)")
+    fig_pm2_5 = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=pm2_5,
+        title={'text': "PM2.5 농도 (㎍/㎥)"},
+        gauge={
+            'axis': {'range': [0, 100]},
+            'steps': [
+                {'range': [0, 15], 'color': "green"},
+                {'range': [15, 35], 'color': "yellow"},
+                {'range': [35, 100], 'color': "red"}
+            ],
+            'threshold': {
+                'line': {'color': "red", 'width': 4},
+                'thickness': 0.75,
+                'value': 35
+            }
+        }
+    ))
+    st.plotly_chart(fig_pm2_5)
+
 except Exception as e:
     st.error("미세먼지 데이터를 가져오는 데 실패했습니다. 인터넷 연결 또는 API 키를 확인하세요.")
 
