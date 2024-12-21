@@ -12,7 +12,7 @@ st.set_page_config(page_title="누비자 데이터 분석", layout="wide")
 # 한글 폰트 설정
 def set_korean_font():
     import matplotlib
-    # 한글 지원이 보장된 폰트: 나눔고딕
+    # 한글 지원이 보장된 폰트: 나눔고딕, 맑은 고딕, AppleGothic
     font_paths = [
         "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",  # Linux
         "C:/Windows/Fonts/malgun.ttf",  # Windows
@@ -21,7 +21,8 @@ def set_korean_font():
     font_path = next((path for path in font_paths if os.path.exists(path)), None)
     if font_path:
         font_prop = fm.FontProperties(fname=font_path)
-        matplotlib.rc('font', family=font_prop.get_name())
+        # rcParams를 사용하여 전역적으로 폰트 설정
+        matplotlib.rcParams['font.family'] = font_prop.get_name()
         plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
         return font_prop
     else:
@@ -47,7 +48,7 @@ st.sidebar.header("📋 메뉴")
 menu = st.sidebar.selectbox("메뉴를 선택하세요", ["대여 및 반납 데이터", "터미널 위치", "미세먼지 현황", "교통혼잡 영향"])
 
 # 데이터 로드 함수
-@st.cache_data
+@st.cache_data(allow_output_mutation=True)  # allow_output_mutation 옵션 추가
 def load_data():
     rental_data = pd.read_csv("rental_data.csv", encoding="euc-kr")
     station_data = pd.read_csv("station_data.csv", encoding="euc-kr")
@@ -55,6 +56,7 @@ def load_data():
 
 # 데이터 로드
 rental_data, station_data = load_data()
+
 
 # 1. 대여 및 반납 데이터
 if menu == "대여 및 반납 데이터":
@@ -78,7 +80,7 @@ elif menu == "터미널 위치":
 # 3. 미세먼지 현황
 elif menu == "미세먼지 현황":
     st.header("🌫️ 창원시 미세먼지 현황")
-    
+
     # 예제 데이터
     air_quality_data = pd.DataFrame({
         "날짜": ["2022-12-01", "2022-12-02", "2022-12-03"],
@@ -101,7 +103,7 @@ elif menu == "미세먼지 현황":
 # 4. 공영자전거와 교통혼잡 영향
 elif menu == "교통혼잡 영향":
     st.header("🚗 공영자전거와 교통혼잡 영향")
-    
+
     # 예제 데이터
     congestion_data = pd.DataFrame({
         "월": ["2022-01", "2022-02", "2022-03"],
