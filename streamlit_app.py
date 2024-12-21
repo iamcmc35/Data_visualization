@@ -6,6 +6,16 @@ from streamlit_folium import folium_static
 import folium
 import plotly.graph_objects as go
 import requests
+import matplotlib.font_manager as fm
+
+# 한글 폰트 설정
+def set_korean_font():
+    try:
+        plt.rc('font', family='NanumGothic')
+    except Exception:
+        st.warning("한글 폰트를 사용할 수 없습니다. 시스템에 'NanumGothic' 폰트를 설치하세요.")
+
+set_korean_font()
 
 # Title and description
 st.title("누비자 데이터 분석 및 환경 영향 대시보드")
@@ -18,7 +28,6 @@ st.markdown("""
 # Section 1: 창원시 미세먼지 현황
 st.header("창원시 미세먼지 현황")
 try:
-    # Example data for air quality (replace with actual API response)
     pm10 = 75  # PM10 예시 값
     pm2_5 = 45  # PM2.5 예시 값
 
@@ -86,16 +95,19 @@ else:
 
 # Section 2: 시간대별 자전거 대여량 분석
 st.header("시간대별 자전거 대여량 분석")
-rental_data['대여시간'] = pd.to_datetime(rental_data['출발시간'], errors='coerce').dt.hour
-hourly_counts = rental_data['대여시간'].value_counts().sort_index()
+if '출발시간' in rental_data.columns:
+    rental_data['대여시간'] = pd.to_datetime(rental_data['출발시간'], errors='coerce').dt.hour
+    hourly_counts = rental_data['대여시간'].value_counts().sort_index()
 
-# Plot hourly rental counts
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.bar(hourly_counts.index, hourly_counts.values, color='skyblue')
-ax.set_title("시간대별 자전거 대여량", fontsize=16)
-ax.set_xlabel("시간대 (시)", fontsize=12)
-ax.set_ylabel("대여량 (건수)", fontsize=12)
-st.pyplot(fig)
+    # Plot hourly rental counts
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(hourly_counts.index, hourly_counts.values, color='skyblue')
+    ax.set_title("시간대별 자전거 대여량", fontsize=16)
+    ax.set_xlabel("시간대 (시)", fontsize=12)
+    ax.set_ylabel("대여량 (건수)", fontsize=12)
+    st.pyplot(fig)
+else:
+    st.error("데이터에 '출발시간' 열이 없습니다. CSV 파일을 확인하세요.")
 
 # Section 3: 공영자전거 이용률에 따른 차량 대체 효과
 st.header("공영자전거 이용률에 따른 차량 대체 효과")
@@ -111,30 +123,5 @@ fig, ax = plt.subplots(figsize=(8, 6))
 categories = ['대여된 자전거', '대체된 차량']
 values = [average_daily_rentals, estimated_car_reduction]
 ax.pie(values, labels=categories, autopct='%1.1f%%', startangle=90, colors=['lightblue', 'orange'])
-ax.set_title("공영자전거 이용에 따른 차량 대체 효과")
+ax.set_title("공영자전거 이용에 따른 차량 대체 효과", fontsize=16)
 st.pyplot(fig)
-
-# Section 4: 터미널별 대여량 히트맵
-st.header("터미널별 대여량 히트맵")
-rental_counts = rental_data['출발터미널'].value_counts()
-
-# Merge with station data to get coordinates
-terminal_data = pd.merge(
-    rental_counts.reset_index(),
-    station_data[['터미널번호', '위도', '경도']],
-    left_on='index',
-    right_on='터미널번호',
-    how='left'
-)
-
-# Create map with heatmap
-map = folium.Map(location=[35.2, 128.65], zoom_start=12)
-for _, row in terminal_data.iterrows():
-    folium.Circle(
-        location=[row['위도'], row['경도']],
-        radius=row['출발터미널'] * 10,  # Adjust size based on rental counts
-        color='blue',
-        fill=True,
-        fill_opacity=0.6
-    ).add_to(map)
-folium_static(map)
