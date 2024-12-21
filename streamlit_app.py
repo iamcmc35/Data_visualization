@@ -69,15 +69,6 @@ try:
 except Exception as e:
     st.error("미세먼지 데이터를 가져오는 데 실패했습니다. 인터넷 연결 또는 API 키를 확인하세요.")
 
-# Section 2: 공영자전거 이용률과 교통 혼잡 영향
-st.header("공영자전거 이용률과 교통 혼잡 영향")
-st.markdown("""
-공영자전거는 교통 혼잡을 완화하는 데 중요한 역할을 합니다:
-- **출근 및 퇴근 시간**에 자전거 이용량 증가: 대중교통과 자동차 사용률 감소 효과.
-- **도심 지역**에서 자전거 이용은 차량 운행 감소로 이어져 배출가스를 줄이는 데 기여합니다.
-- **장기적 효과**: 자전거 이용을 촉진하면 차량 소유를 줄이고, 도시 내 교통 혼잡을 완화할 수 있습니다.
-""")
-
 # Load data
 @st.cache_data
 def load_data():
@@ -87,39 +78,57 @@ def load_data():
 
 rental_data, station_data = load_data()
 
-# Section 3: 터미널별 대여 및 반납 건수 분석
-st.header("터미널별 대여 및 반납 건수 분석")
+# Section 2: 시간대별 자전거 대여량 분석
+st.header("시간대별 자전거 대여량 분석")
+rental_data['대여시간'] = pd.to_datetime(rental_data['출발시간'], errors='coerce').dt.hour
+hourly_counts = rental_data['대여시간'].value_counts().sort_index()
+
+# Plot hourly rental counts
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.bar(hourly_counts.index, hourly_counts.values, color='skyblue')
+ax.set_title("시간대별 자전거 대여량", fontsize=16)
+ax.set_xlabel("시간대 (시)", fontsize=12)
+ax.set_ylabel("대여량 (건수)", fontsize=12)
+st.pyplot(fig)
+
+# Section 3: 공영자전거 이용률에 따른 차량 대체 효과
+st.header("공영자전거 이용률에 따른 차량 대체 효과")
+average_daily_rentals = len(rental_data['대여일'].unique())  # 하루 평균 대여 건수 계산
+car_replacement_rate = 0.2  # 자전거 1대당 대체되는 차량 비율 (예: 20%)
+estimated_car_reduction = average_daily_rentals * car_replacement_rate
+
+# Display results
+st.write(f"공영자전거를 통해 하루 약 {estimated_car_reduction:.0f}대의 차량 운행이 감소합니다.")
+
+# Visualization
+fig, ax = plt.subplots(figsize=(8, 6))
+categories = ['대여된 자전거', '대체된 차량']
+values = [average_daily_rentals, estimated_car_reduction]
+ax.pie(values, labels=categories, autopct='%1.1f%%', startangle=90, colors=['lightblue', 'orange'])
+ax.set_title("공영자전거 이용에 따른 차량 대체 효과")
+st.pyplot(fig)
+
+# Section 4: 터미널별 대여량 히트맵
+st.header("터미널별 대여량 히트맵")
 rental_counts = rental_data['출발터미널'].value_counts()
-return_counts = rental_data['도착터미널'].value_counts()
-terminal_usage = pd.DataFrame({
-    "대여건수": rental_counts,
-    "반납건수": return_counts
-}).fillna(0)
-st.bar_chart(terminal_usage)
 
-# Section 4: 터미널 간 이동 경로 히트맵
-st.header("터미널 간 이동 경로 히트맵")
-movement_matrix = rental_data.pivot_table(
-    index='출발터미널', columns='도착터미널', aggfunc='size', fill_value=0
+# Merge with station data to get coordinates
+terminal_data = pd.merge(
+    rental_counts.reset_index(),
+    station_data[['터미널번호', '위도', '경도']],
+    left_on='index',
+    right_on='터미널번호',
+    how='left'
 )
-plt.figure(figsize=(12, 8))
-sns.heatmap(movement_matrix, cmap="Blues", square=True)
-st.pyplot(plt)
 
-# Section 5: 날짜별 이용량 변화 추세
-st.header("날짜별 이용량 변화 추세")
-rental_data['대여일'] = pd.to_datetime(rental_data['출발일'], errors='coerce')
-daily_counts = rental_data['대여일'].value_counts().sort_index()
-st.line_chart(daily_counts)
-
-# Section 6: 터미널 위치 시각화
-st.header("터미널 위치 시각화")
+# Create map with heatmap
 map = folium.Map(location=[35.2, 128.65], zoom_start=12)
-for _, row in station_data.iterrows():
-    folium.Marker(
-        [row['위도'], row['경도']],
-        tooltip=row['터미널명']
+for _, row in terminal_data.iterrows():
+    folium.Circle(
+        location=[row['위도'], row['경도']],
+        radius=row['출발터미널'] * 10,  # Adjust size based on rental counts
+        color='blue',
+        fill=True,
+        fill_opacity=0.6
     ).add_to(map)
 folium_static(map)
-
-st.markdown("### 추가 분석 기능은 계속 업데이트될 예정입니다!")
